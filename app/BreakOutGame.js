@@ -23,9 +23,18 @@ var breakOutGame = (function () {
 	var bricks = [];
 	var paddle;
 	var ball;
-
+    
+    //Added variables
+    var singleBrick;
+    var spaceBetweenBricksX = 5;
+    var spaceBetweenBricksY = 15;
+    var xPos = 10;
+    var yPos = 10;
+    
 	function privateDraw() {
-        console.log("Drawing!");
+        for(var i = 0;i < bricks.length;i++){
+            bricks[i].draw();
+        }
         window.requestAnimationFrame(privateDraw);
 	}
 
@@ -35,10 +44,32 @@ var breakOutGame = (function () {
 	}
 
 	function publicInit(canvas, difficulty) {
-        console.log("Breakout, here we go!");
 		privateSetContext(canvas);
+        //SET BRICKWALL
+        for(var i = 1;i <= BRICK_ROWS;i++){
+            xPos = 10;
+            for(var j = 1;j <= BRICK_COLUMNS;j++){
+                singleBrick = new Brick(privateContext,xPos,yPos,getRowColor(i),BRICK_WIDTH,BRICK_HEIGHT);
+                bricks.push(singleBrick);
+                xPos = xPos + BRICK_WIDTH + spaceBetweenBricksX;
+            }
+            yPos = yPos + spaceBetweenBricksY;
+        }
+        
 		window.requestAnimationFrame(privateDraw);
 	}
+    
+    function getRowColor(row){
+        if(row == 1 || row == 2){
+           return "red";
+        }else if(row == 3){
+           return "yellow";
+        }else if(row == 4){
+           return "orange";
+        }else if(row == 5){
+           return "green";
+        }
+    }
 
 	return {
 		init: publicInit
