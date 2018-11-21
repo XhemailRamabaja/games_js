@@ -41,8 +41,8 @@ var breakOutGame = (function () {
         for (var i = 0; i < bricks.length; i++) {
             bricks[i].draw();
         }
-        paddle.updateXPos(paddleXPos);
-        paddle.draw();
+        drawPaddle();
+        drawBall();
         window.requestAnimationFrame(privateDraw);
     }
 
@@ -55,10 +55,23 @@ var breakOutGame = (function () {
         privateSetContext(canvas);
         setBrickWall();
         paddle = new Paddle(privateContext, GAME_WIDTH, GAME_HEIGHT, paddleWidth, paddleHeight);
+        ball = new Ball(GAME_WIDTH / 2, GAME_HEIGHT / 2, BALLSIZE, randomSpeed(), randomSpeed(), privateContext);
         canvas.addEventListener('mousemove', updatePaddlePosition);
         window.requestAnimationFrame(privateDraw);
     }
-    
+
+    function drawPaddle() {
+        paddle.draw();
+        paddle.updateXPos(paddleXPos);
+        if (paddle.checkBallCollision(ball.xPos, ball.yPos, ball.radius) == true) {
+            ball.bounceHorizontally();
+        }
+    }
+
+    function drawBall() {
+        ball.draw();
+        ball.checkWallCollision(GAME_WIDTH, GAME_HEIGHT);
+    }
     //COLORED BRICKWALL
     function setBrickWall() {
         for (var i = 1; i <= BRICK_ROWS; i++) {
@@ -75,8 +88,12 @@ var breakOutGame = (function () {
     function updatePaddlePosition(MouseEvent) {
         paddleXPos = MouseEvent.clientX - canvas.offsetLeft;
         console.log(paddleXPos);
-
     }
+    //RANDOM SPEED
+    function randomSpeed() {
+        return Math.floor(Math.random() * 3) + 1;
+    }
+
     //ROW COLORS
     function getRowColor(row) {
         if (row == 1 || row == 2) {

@@ -1,22 +1,45 @@
 /* Paddle represents the players paddle used to deflect the ball in the game */
 class Paddle {
-    constructor(context, canvasWidth, canvasHeight, paddleWidth, paddleHeight) {
+    constructor(context, gameWidth, gameHeight, paddleWidth, paddleHeight) {
         this.context = context;
-        this.xPos = (canvasWidth / 2) - (paddleWidth / 2);
+        this.xPos = (gameWidth / 2) - (paddleWidth / 2);
         this.width = paddleWidth;
         this.height = paddleHeight;
-        this.yPos = canvasHeight - 40;
+        this.yPos = gameHeight - 50;
+        this.gameWidth = gameWidth;
+        this.gameHeight = gameHeight;
     }
 
     draw() {
         this.context.fillStyle = "white";
         this.context.fillRect(this.xPos, this.yPos, this.width, this.height);
-
     }
+    updateXPos(mouseXPos) {
+        var paddleMiddle = (this.width / 2);
 
-    updateXPos(xPos) {
-        if (xPos + this.width <= 600){
-            this.xPos = xPos;
+        if (mouseXPos < this.gameWidth / 2) {
+            if (mouseXPos - paddleMiddle >= 0) {
+                this.xPos = mouseXPos - paddleMiddle;
+            } else if (mouseXPos - paddleMiddle < 0) {
+                var beyondsGameWidth = mouseXPos - paddleMiddle;
+                this.xPos = mouseXPos - paddleMiddle - beyondsGameWidth;
+            }
+        } else if (mouseXPos > this.gameWidth / 2) {
+            if (mouseXPos + paddleMiddle <= this.gameWidth) {
+                this.xPos = mouseXPos - paddleMiddle;
+            } else if (mouseXPos + paddleMiddle > this.gameWidth) {
+                beyondsGameWidth = (mouseXPos + paddleMiddle) - this.gameWidth;
+                this.xPos = mouseXPos - paddleMiddle - beyondsGameWidth;
+            }
         }
+    }
+    checkBallCollision(ballXPos,ballYPos,ballRadius){
+        var hitPointX = ballXPos + ballRadius;
+        var hitPointY = ballYPos + ballRadius;
+        
+        if(hitPointY >= this.yPos && hitPointX >= this.xPos && hitPointX <= this.xPos + this.width){
+              return true;
+        }
+        
     }
 }
