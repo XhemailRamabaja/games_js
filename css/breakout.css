@@ -17,3 +17,20 @@ body {
 h1 {
 	margin-bottom: 15px;
 }
+
+select {
+    width:70px;
+    height:25px;
+    border-radius: 10%;
+    margin-right: 5px;
+}
+
+#startButton{
+    width:60px;
+    height:25px;
+}
+
+span{
+    font-size: 20px;
+    margin-right:5px;
+}

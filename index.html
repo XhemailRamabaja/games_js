@@ -2,21 +2,30 @@
 <html>
 
 <head>
-	<meta charset="UTF-8" />
-	<title>BreakOut</title>
-	<link rel="stylesheet" type="text/css" href="css/breakout.css">
+    <meta charset="UTF-8" />
+    <title>BreakOut</title>
+    <link rel="stylesheet" type="text/css" href="css/breakout.css">
 </head>
 
 <body>
-	<h1>BreakOut</h1>
-	<p id="canvas">
-		<canvas id="breakoutcanvas" width="600" height="500"></canvas>
-	</p>
-	<script src="app/gameobjects/Ball.js"></script>
-	<script src="app/gameobjects/Paddle.js"></script>
-	<script src="app/gameobjects/Brick.js"></script>
-	<script src="app/collisionChecker.js"></script>
-	<script src="app/BreakOutGame.js"></script>
+    <h1>BreakOut</h1>
+    <p id  = "startMenu">
+        <span>Schwierigkeitsgrad:</span>
+        <select id="levelOfDifficulty">
+            <option id = "leicht">Leicht</option>
+            <option id = "mittel">Mittel</option>
+            <option id = "schwer">Schwer</option>
+        </select>
+        <input id = "startButton" type="button" value="Start">
+    </p>
+    <p id="canvas">
+        <canvas id="breakoutcanvas" width="600" height="500"></canvas>
+    </p>
+    <script src="app/gameobjects/Ball.js"></script>
+    <script src="app/gameobjects/Paddle.js"></script>
+    <script src="app/gameobjects/Brick.js"></script>
+    <script src="app/collisionChecker.js"></script>
+    <script src="app/BreakOutGame.js"></script>
 </body>
 
 </html>

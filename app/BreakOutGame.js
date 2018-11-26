@@ -6,6 +6,9 @@
  * ball.
  *
  */
+
+
+
 var breakOutGame = (function () {
 
     // private vars and constants
@@ -31,19 +34,55 @@ var breakOutGame = (function () {
     var spaceBetweenBricksY = 15;
     var brickXPos = 10;
     var brickYPos = 10;
+    var eliminatedBricks = [];
     //PADDLE
     var paddleWidth = 60;
-    var paddleHeight = 10;
+    var paddleHeight = 15;
     var paddleXPos;
 
+    var gameStop = false;
+
     function privateDraw() {
-        privateContext.clearRect(0, 0, GAME_WIDTH, GAME_HEIGHT);
-        for (var i = 0; i < bricks.length; i++) {
-            bricks[i].draw();
+            privateContext.clearRect(0, 0, GAME_WIDTH, GAME_HEIGHT);
+            for (var i = 0; i < bricks.length; i++) {
+                if (eliminatedBricks.includes(bricks[i]) != true) {
+                    bricks[i].draw();
+                } else {
+                    continue;
+                }
+                if (bricks[i].checkBallCollision(ball.xPos, ball.yPos, ball.radius) == true) {
+                    ball.bounceHorizontally();
+                    eliminatedBricks.push(bricks[i]);
+                }
+
+            }
+            drawPaddle();
+            drawBall();
+            checkIfGameLost();
+            checkIfGameWon();
+            if(gameStop != true){
+               window.requestAnimationFrame(privateDraw);
+            }
+    }
+
+    function checkIfGameWon() {
+        if (eliminatedBricks.length == BRICK_ROWS * BRICK_COLUMNS) {
+            privateContext.font = "30px Arial";
+            privateContext.fillStyle = "green";
+            privateContext.textAlign = "center";
+            privateContext.fillText("Game Won!", GAME_WIDTH / 2, GAME_HEIGHT / 2);
+            gameStop = true;
         }
-        drawPaddle();
-        drawBall();
-        window.requestAnimationFrame(privateDraw);
+    }
+
+    function checkIfGameLost() {
+        if (ball.yPos + ball.radius >= GAME_HEIGHT){
+            privateContext.font = "30px Arial";
+            privateContext.fillStyle = "green";
+            privateContext.textAlign = "center";
+            privateContext.fillText("Game Over. Please refresh for restart!", GAME_WIDTH / 2, GAME_HEIGHT / 2);
+            gameStop = true;
+        }
     }
 
     function privateSetContext(canvas) {
@@ -55,7 +94,7 @@ var breakOutGame = (function () {
         privateSetContext(canvas);
         setBrickWall();
         paddle = new Paddle(privateContext, GAME_WIDTH, GAME_HEIGHT, paddleWidth, paddleHeight);
-        ball = new Ball(GAME_WIDTH / 2, GAME_HEIGHT / 2, BALLSIZE, randomSpeed(), randomSpeed(), privateContext);
+        ball = new Ball(GAME_WIDTH/2, GAME_HEIGHT/2, BALLSIZE, randomSpeed(difficulty), randomSpeed(difficulty), privateContext);
         canvas.addEventListener('mousemove', updatePaddlePosition);
         window.requestAnimationFrame(privateDraw);
     }
@@ -63,14 +102,16 @@ var breakOutGame = (function () {
     function drawPaddle() {
         paddle.draw();
         paddle.updateXPos(paddleXPos);
-        if (paddle.checkBallCollision(ball.xPos, ball.yPos, ball.radius) == true) {
-            ball.bounceHorizontally();
+        if (ball.yPos >= GAME_HEIGHT/2) {
+            if (paddle.checkBallCollision(ball.xPos, ball.yPos, ball.radius, ball.speedY) == true) {
+                ball.bounceHorizontally();
+            }
         }
     }
 
     function drawBall() {
-        ball.draw();
         ball.checkWallCollision(GAME_WIDTH, GAME_HEIGHT);
+        ball.draw();
     }
     //COLORED BRICKWALL
     function setBrickWall() {
@@ -87,13 +128,23 @@ var breakOutGame = (function () {
     //MOUSE LISTENER
     function updatePaddlePosition(MouseEvent) {
         paddleXPos = MouseEvent.clientX - canvas.offsetLeft;
-        console.log(paddleXPos);
     }
     //RANDOM SPEED
-    function randomSpeed() {
-        return Math.floor(Math.random() * 3) + 1;
+    function randomSpeed(difficulty) {
+        var minMax;
+        switch(difficulty){
+            case "Leicht":
+                minMax = 1;
+                break;
+            case "Mittel":
+                minMax = 3
+                break;
+            case "Schwer":
+                minMax = 4;
+                break;
+        }
+        return minMax;
     }
-
     //ROW COLORS
     function getRowColor(row) {
         if (row == 1 || row == 2) {
@@ -112,5 +163,22 @@ var breakOutGame = (function () {
     };
 })();
 
-var canvas = document.getElementById("breakoutcanvas");
-breakOutGame.init(canvas);
+
+(function () {
+    var selectedDifficulty;
+    var button = document.getElementById("startButton").addEventListener("click", getDifficulty);
+    var canvas = document.getElementById("breakoutcanvas");
+    canvas.style.borderColor = "black";
+
+    function removeMenu() {
+        var menu = document.getElementById("startMenu");
+        menu.parentNode.removeChild(menu);
+        canvas.style.borderColor = "white";
+        breakOutGame.init(canvas, selectedDifficulty);
+    }
+
+    function getDifficulty() {
+        selectedDifficulty = document.getElementById("levelOfDifficulty").value;
+        removeMenu();
+    }
+})();
