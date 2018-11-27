@@ -6,6 +6,7 @@ class Ball {
         this.radius = radius;
         this.speedX = speedX;
         this.speedY = speedY;
+        this.color = "white";
     }
 
     draw() {
@@ -13,7 +14,7 @@ class Ball {
         this.yPos += this.speedY;
         this.context.beginPath();
         this.context.arc(this.xPos, this.yPos, this.radius, 0, 2 * Math.PI);
-        this.context.fillStyle = "white";
+        this.context.fillStyle = this.color;
         this.context.fill();
     }
 

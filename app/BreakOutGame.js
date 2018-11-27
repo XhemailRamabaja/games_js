@@ -22,12 +22,17 @@ var breakOutGame = (function () {
     var BALLSIZE = 10;
     var BRICK_WIDTH = 40;
     var BRICK_HEIGHT = 10;
+    var STARS_QUANTITY = 250;
+    var POWUP_WIDTH = 40;
+    var POWUP_HEIGHT = 15;
 
     var bricks = [];
     var paddle;
     var ball;
 
     //#####ADDED VARS
+    //BACKGROUND
+    var stars = [];
     //BRICKS
     var singleBrick;
     var spaceBetweenBricksX = 5;
@@ -41,9 +46,19 @@ var breakOutGame = (function () {
     var paddleXPos;
     //GAME STATE
     var gameStop = false;
+    //SCORE
+    var score = 0;
+    var points = 2;
+    var scoreColor = "white";
+    //POWERUPS
+    var singlePowUp;
+    var powUpTimer = 0;
+    var timeStart = false;
+    var powUpSignal = false;
+    var changedSetting;
 
     function privateDraw() {
-        privateContext.clearRect(0, 0, GAME_WIDTH, GAME_HEIGHT);
+        drawBackground();
         drawPaddle();
         drawBall();
         checkIfGameLost();
@@ -55,16 +70,148 @@ var breakOutGame = (function () {
                 continue;
             }
             if (bricks[i].checkBallCollision(ball.xPos, ball.yPos, ball.radius) == true) {
+                score += points;
+                speedUpGame(score);
                 ball.bounceHorizontally();
                 destroyedBricks.push(bricks[i]);
+                checkForPowerUp(bricks[i].xPos, bricks[i].yPos);
+            }
+        }
+        //POWERUP
+        if (powUpSignal == true) {
+            if (singlePowUp.yPos >= GAME_HEIGHT) {
+                powUpSignal = false;
+            } else {
+                singlePowUp.draw();
+            }
+            if (singlePowUp.checkPaddleCollision(paddle.xPos, paddle.yPos, paddle.width) == true) {
+                changedSetting = singlePowUp.powerUpType;
+                manipulateGame(changedSetting);
+                powUpSignal = false;
+                timeStart = true;
             }
 
         }
+        if (timeStart == true) {
+            powUpTimer++;
+        }
+        if (powUpTimer == 1500) {
+            resetSettings(changedSetting);
+            timeStart = false;
+            powUpTimer = 0;
+        }
+        displayScore(score);
         if (gameStop != true) {
             window.requestAnimationFrame(privateDraw);
         }
     }
 
+    // EXTENSIONS ---------------------------
+    //creates Powerup
+    function checkForPowerUp(brickX, brickY) {
+        //only creates powerups if there isnt on yet
+        if (powUpSignal == false && timeStart == false) {
+            var randomDecision1 = Math.floor(Math.random() * 8) + 1;
+            var randomDecision2 = Math.floor(Math.random() * 8) + 1;
+            var powerUpType = Math.floor(Math.random() * 4) + 1;
+            
+            if (randomDecision1 == randomDecision2) {
+                singlePowUp = new Powerup(privateContext, powerUpType, brickX, brickY, POWUP_WIDTH, POWUP_HEIGHT);
+                powUpSignal = true;
+            }
+        }
+    }
+    //manipulates Game through powerup
+    function manipulateGame(setting) {
+        switch (setting) {
+            case 1:
+                //bigger paddle
+                paddle.width += 20;
+                break;
+            case 2:
+                //smaller paddle
+                paddle.width -= 15;
+                break;
+            case 3:
+                //double points
+                points = 4;
+                scoreColor = "green";
+                break;
+            case 4:
+                var length = destroyedBricks.length;
+                for (var i = 0; i < length; i++) {
+                    destroyedBricks.pop();
+                }
+                break;
+        }
+    }
+    //resetSettings
+    function resetSettings(setting) {
+        switch (setting) {
+            case 1:
+                //reset size
+                paddle.width -= 10;
+                break;
+            case 2:
+                //smaller paddle
+                paddle.width += 10;
+                break;
+            case 3:
+                //double points
+                points = 7;
+                scoreColor = "white";
+                break;
+        }
+    }
+
+    function drawBackground() {
+        privateContext.fillStyle = "black";
+        privateContext.fillRect(0, 0, GAME_WIDTH, GAME_HEIGHT);
+        for (var i = 0; i < stars.length; i++) {
+            stars[i].draw();
+        }
+    }
+    //function call at publicInit()
+    function setStars() {
+        var randomX;
+        var randomY;
+        for (var i = 0; i < STARS_QUANTITY; i++) {
+            randomX = Math.floor(Math.random() * GAME_WIDTH) + 1;
+            randomY = Math.floor(Math.random() * GAME_HEIGHT) + 1;
+            stars[i] = new Star(privateContext, randomX, randomY);
+        }
+    }
+
+    function speedUpGame(score) {
+        if (score == 42 || score == 102) {
+            ball.color = "red";
+            if (ball.speedX > 0) {
+                ball.speedX++;
+            } else {
+                ball.speedX--;
+            }
+            if (ball.speedY > 0) {
+                ball.speedY++;
+            } else {
+                ball.speedY--;
+            }
+        }
+        if (score >= 42 && score < 102) {
+            ball.color = "red";
+        } else if (score >= 102 && score < 142) {
+            ball.color = "orange";
+        } else {
+            ball.color = "white";
+        }
+    }
+
+    function displayScore(score) {
+        privateContext.font = "25px Arial";
+        privateContext.fillStyle = scoreColor;
+        privateContext.fillText(score, GAME_WIDTH - 40, GAME_HEIGHT - 10);
+    }
+
+    //EXTENSIONS END-----------------------------------------
 
     function checkIfGameWon() {
         if (destroyedBricks.length == BRICK_ROWS * BRICK_COLUMNS) {
@@ -72,6 +219,7 @@ var breakOutGame = (function () {
             privateContext.fillStyle = "green";
             privateContext.textAlign = "center";
             privateContext.fillText("You won!", GAME_WIDTH / 2, GAME_HEIGHT / 2);
+            scoreColor = "green";
             gameStop = true;
         }
     }
@@ -82,9 +230,11 @@ var breakOutGame = (function () {
             privateContext.fillStyle = "red";
             privateContext.textAlign = "center";
             privateContext.fillText("Game Over. Please refresh for restart!", GAME_WIDTH / 2, GAME_HEIGHT / 2);
+            scoreColor = "red";
             gameStop = true;
         }
     }
+
 
     function drawPaddle() {
         paddle.draw();
@@ -124,10 +274,10 @@ var breakOutGame = (function () {
                 speed = 2;
                 break;
             case "Normal":
-                speed = 4;
+                speed = 3;
                 break;
             case "Hard":
-                speed = 6;
+                speed = 5;
                 break;
         }
         return speed;
@@ -153,6 +303,7 @@ var breakOutGame = (function () {
     function publicInit(canvas, difficulty) {
         privateSetContext(canvas);
         setBrickWall();
+        setStars();
         paddle = new Paddle(privateContext, GAME_WIDTH, GAME_HEIGHT, paddleWidth, paddleHeight);
         ball = new Ball(GAME_WIDTH / 2, GAME_HEIGHT / 2, BALLSIZE, getSpeed(difficulty), getSpeed(difficulty), privateContext);
         canvas.addEventListener('mousemove', updatePaddlePosition);
