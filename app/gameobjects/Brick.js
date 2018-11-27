@@ -14,25 +14,37 @@ class Brick {
     }
 
     checkBallCollision(ballXPos, ballYPos, ballRadius) {
-        var collisionBottom = Math.abs((this.yPos + this.height) - ballYPos) < ballRadius;
-        var collisionTop = Math.abs(ballYPos - this.yPos) < ballRadius;
-        var collisionLeft = Math.abs(this.xPos - ballXPos) < ballRadius;
-        var collisionRight = Math.abs((this.xPos + this.width) - ballXPos) < ballRadius;
+        //balls x&y-coords are closest edges by default, one of those default settings is always needed
+        var closestXEdge = ballXPos;
+        var closestYEdge = ballYPos;
 
-        if ((ballXPos >= this.xPos) && (ballXPos <= this.xPos + this.width)) {
-            if ((collisionTop && (ballYPos < this.yPos)) || (collisionBottom && (ballYPos > this.yPos + this.height))) {
-                return true;
-            } else {
-                return false;
-            }
-        } else if ((ballYPos >= this.yPos) && (ballYPos <= this.yPos + this.height)) {
-            if (collisionLeft || collisionRight) {
-                return true;
-            } else {
-                return false;
-            } 
+        // which edge is closest?
+        if (ballXPos < this.xPos){
+            closestXEdge = this.xPos; // left edge
+        }else if (ballXPos > this.xPos + this.width){
+            closestXEdge = this.xPos + this.width; //right edge
+        } 
+        
+        if (ballYPos < this.yPos){
+             closestYEdge = this.yPos; //top edge
+        }else if (ballYPos > this.yPos + this.height){
+             closestYEdge = this.yPos + this.height; //bottom edge 
+        }
+
+        // get distance from closest edges 
+        var distanceX = ballXPos - closestXEdge;
+        var distanceY = ballYPos - closestYEdge;
+        //Pythagorean theorem
+        var distance = Math.sqrt((distanceX * distanceX) + (distanceY * distanceY));
+
+        // if distance is less than balls radius -> COLLISON
+        if (distance <= ballRadius) {
+            return true;
         }else{
-            return false;
+         return false;   
         }
     }
 }
+
+
+

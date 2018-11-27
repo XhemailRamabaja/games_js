@@ -33,16 +33,17 @@ class Paddle {
             }
         }
     }
-    checkBallCollision(ballXPos,ballYPos,ballRadius,ballSpeedY){
+    checkBallCollision(ballXPos, ballYPos, ballRadius, ballSpeedY) {
         var hitPointX = ballXPos + ballRadius;
         var hitPointY = ballYPos + ballRadius + ballSpeedY;
-        
-        if(hitPointX >= this.xPos && hitPointX <= this.xPos + this.width){
-           if(hitPointY >= this.yPos && ballYPos < this.yPos){
-              return true;
-           }else{
-              return false;
-           }
+
+        if (hitPointX >= this.xPos && hitPointX <= this.xPos + this.width) {
+            if (hitPointY >= this.yPos && ballYPos < this.yPos) {
+                return true;
+            } else {
+                return false;
+            }
         }
+
     }
 }

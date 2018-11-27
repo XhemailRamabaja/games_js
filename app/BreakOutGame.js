@@ -27,82 +27,69 @@ var breakOutGame = (function () {
     var paddle;
     var ball;
 
-    //Added variables
-    //BRICK
+    //#####ADDED VARS
+    //BRICKS
     var singleBrick;
     var spaceBetweenBricksX = 5;
     var spaceBetweenBricksY = 15;
     var brickXPos = 10;
     var brickYPos = 10;
-    var eliminatedBricks = [];
+    var destroyedBricks = [];
     //PADDLE
     var paddleWidth = 60;
     var paddleHeight = 15;
     var paddleXPos;
-
+    //GAME STATE
     var gameStop = false;
 
     function privateDraw() {
-            privateContext.clearRect(0, 0, GAME_WIDTH, GAME_HEIGHT);
-            for (var i = 0; i < bricks.length; i++) {
-                if (eliminatedBricks.includes(bricks[i]) != true) {
-                    bricks[i].draw();
-                } else {
-                    continue;
-                }
-                if (bricks[i].checkBallCollision(ball.xPos, ball.yPos, ball.radius) == true) {
-                    ball.bounceHorizontally();
-                    eliminatedBricks.push(bricks[i]);
-                }
+        privateContext.clearRect(0, 0, GAME_WIDTH, GAME_HEIGHT);
+        drawPaddle();
+        drawBall();
+        checkIfGameLost();
+        checkIfGameWon();
+        for (var i = 0; i < bricks.length; i++) {
+            if (destroyedBricks.includes(bricks[i]) != true) {
+                bricks[i].draw();
+            } else {
+                continue;
+            }
+            if (bricks[i].checkBallCollision(ball.xPos, ball.yPos, ball.radius) == true) {
+                ball.bounceHorizontally();
+                destroyedBricks.push(bricks[i]);
+            }
 
-            }
-            drawPaddle();
-            drawBall();
-            checkIfGameLost();
-            checkIfGameWon();
-            if(gameStop != true){
-               window.requestAnimationFrame(privateDraw);
-            }
+        }
+        if (gameStop != true) {
+            window.requestAnimationFrame(privateDraw);
+        }
     }
 
+
     function checkIfGameWon() {
-        if (eliminatedBricks.length == BRICK_ROWS * BRICK_COLUMNS) {
+        if (destroyedBricks.length == BRICK_ROWS * BRICK_COLUMNS) {
             privateContext.font = "30px Arial";
             privateContext.fillStyle = "green";
             privateContext.textAlign = "center";
-            privateContext.fillText("Game Won!", GAME_WIDTH / 2, GAME_HEIGHT / 2);
+            privateContext.fillText("You won!", GAME_WIDTH / 2, GAME_HEIGHT / 2);
             gameStop = true;
         }
     }
 
     function checkIfGameLost() {
-        if (ball.yPos + ball.radius >= GAME_HEIGHT){
+        if (ball.yPos + ball.radius >= GAME_HEIGHT) {
             privateContext.font = "30px Arial";
-            privateContext.fillStyle = "green";
+            privateContext.fillStyle = "red";
             privateContext.textAlign = "center";
             privateContext.fillText("Game Over. Please refresh for restart!", GAME_WIDTH / 2, GAME_HEIGHT / 2);
             gameStop = true;
         }
     }
 
-    function privateSetContext(canvas) {
-        privateCanvas = canvas;
-        privateContext = canvas.getContext("2d");
-    }
-
-    function publicInit(canvas, difficulty) {
-        privateSetContext(canvas);
-        setBrickWall();
-        paddle = new Paddle(privateContext, GAME_WIDTH, GAME_HEIGHT, paddleWidth, paddleHeight);
-        ball = new Ball(GAME_WIDTH/2, GAME_HEIGHT/2, BALLSIZE, randomSpeed(difficulty), randomSpeed(difficulty), privateContext);
-        canvas.addEventListener('mousemove', updatePaddlePosition);
-        window.requestAnimationFrame(privateDraw);
-    }
-
     function drawPaddle() {
         paddle.draw();
         paddle.updateXPos(paddleXPos);
-        if (ball.yPos >= GAME_HEIGHT/2) {
+        if (ball.yPos >= GAME_HEIGHT / 2) {
             if (paddle.checkBallCollision(ball.xPos, ball.yPos, ball.radius, ball.speedY) == true) {
                 ball.bounceHorizontally();
             }
@@ -129,21 +116,21 @@ var breakOutGame = (function () {
     function updatePaddlePosition(MouseEvent) {
         paddleXPos = MouseEvent.clientX - canvas.offsetLeft;
     }
-    //RANDOM SPEED
-    function randomSpeed(difficulty) {
-        var minMax;
-        switch(difficulty){
-            case "Leicht":
-                minMax = 1;
+    //GET SPEED BY LEVEL OF DIFFICULTY
+    function getSpeed(difficulty) {
+        var speed;
+        switch (difficulty) {
+            case "Easy":
+                speed = 2;
                 break;
-            case "Mittel":
-                minMax = 3
+            case "Normal":
+                speed = 4;
                 break;
-            case "Schwer":
-                minMax = 4;
+            case "Hard":
+                speed = 6;
                 break;
         }
-        return minMax;
+        return speed;
     }
     //ROW COLORS
     function getRowColor(row) {
@@ -158,6 +145,20 @@ var breakOutGame = (function () {
         }
     }
 
+    function privateSetContext(canvas) {
+        privateCanvas = canvas;
+        privateContext = canvas.getContext("2d");
+    }
+
+    function publicInit(canvas, difficulty) {
+        privateSetContext(canvas);
+        setBrickWall();
+        paddle = new Paddle(privateContext, GAME_WIDTH, GAME_HEIGHT, paddleWidth, paddleHeight);
+        ball = new Ball(GAME_WIDTH / 2, GAME_HEIGHT / 2, BALLSIZE, getSpeed(difficulty), getSpeed(difficulty), privateContext);
+        canvas.addEventListener('mousemove', updatePaddlePosition);
+        window.requestAnimationFrame(privateDraw);
+    }
+
     return {
         init: publicInit
     };
@@ -166,9 +167,9 @@ var breakOutGame = (function () {
 
 (function () {
     var selectedDifficulty;
-    var button = document.getElementById("startButton").addEventListener("click", getDifficulty);
     var canvas = document.getElementById("breakoutcanvas");
     canvas.style.borderColor = "black";
+    var button = document.getElementById("startButton").addEventListener("click", getDifficulty);
 
     function removeMenu() {
         var menu = document.getElementById("startMenu");
